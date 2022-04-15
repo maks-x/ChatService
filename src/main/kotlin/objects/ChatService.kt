@@ -95,7 +95,7 @@ object ChatService {
         return chats.find {
             it.talkers.containsAll(listOf(userID, otherID))
                     && !it.isDeleted
-        } ?: throw ChatNotFoundException("Chat of users #$userID and $otherID not found!")
+        } ?: throw ChatNotFoundException("Chat of users #$userID and #$otherID not found!")
     }
 
     private fun Chat.restore() {

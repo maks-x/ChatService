@@ -37,9 +37,16 @@ class ChatServiceTest {
     }
 
     @Test
-    fun getUnreadChatsCountRead() {
+    fun getUnreadChatsCountDeletedChat() {
         cs.reset()
         cs.deleteChat(CURRENT_USER_ID, SECOND_USER_ID)
+        assertTrue(cs.getUnreadChatsCount(SECOND_USER_ID) == 0)
+    }
+
+    @Test
+    fun getUnreadChatsCountRead() {
+        cs.reset()
+        cs.getMessagesList(SECOND_USER_ID, CURRENT_USER_ID)
         assertTrue(cs.getUnreadChatsCount(SECOND_USER_ID) == 0)
     }
 
@@ -65,7 +72,7 @@ class ChatServiceTest {
         val messages = listOf(
             Message(3, CURRENT_USER_ID, SECOND_USER_ID, "It's poor Kotlin here =)")
         )
-        assertTrue(messages == cs.getMessagesList(CURRENT_USER_ID, SECOND_USER_ID, 3))
+        assertTrue(messages == cs.getMessagesList(CURRENT_USER_ID, SECOND_USER_ID, 3, 1))
     }
 
     @Test(expected = ChatNotFoundException::class)
@@ -75,7 +82,7 @@ class ChatServiceTest {
     }
 
     @Test
-    fun createMessageOldChat() {
+    fun createMessageDeletedChat() {
         cs.reset()
         cs.deleteChat(CURRENT_USER_ID, SECOND_USER_ID)
         val message = Message(4, CURRENT_USER_ID, SECOND_USER_ID, "")
@@ -97,6 +104,23 @@ class ChatServiceTest {
         cs.deleteMessage(CURRENT_USER_ID, SECOND_USER_ID, 4)
     }
 
+    @Test(expected = MessageNotFoundException::class)
+    fun deleteDeletedMessage() {
+        cs.reset()
+        cs.deleteMessage(CURRENT_USER_ID, SECOND_USER_ID, 1)
+        cs.deleteMessage(CURRENT_USER_ID, SECOND_USER_ID, 1)
+    }
+
+    @Test(expected = ChatNotFoundException::class)
+    fun deleteLastMessage() {
+        cs.reset()
+        cs.deleteMessage(CURRENT_USER_ID, SECOND_USER_ID, 1)
+        cs.deleteMessage(CURRENT_USER_ID, SECOND_USER_ID, 2)
+        cs.deleteMessage(CURRENT_USER_ID, SECOND_USER_ID, 3)
+        cs.deleteMessage(CURRENT_USER_ID, SECOND_USER_ID, 999)
+
+    }
+
     @Test(expected = ChatNotFoundException::class)
     fun deleteMessageThrowsChatExc() {
         cs.reset()
@@ -116,5 +140,12 @@ class ChatServiceTest {
     fun deleteChatThrowsEx() {
         cs.reset()
         cs.deleteChat(CURRENT_USER_ID,4)
+    }
+
+    @Test(expected = ChatNotFoundException::class)
+    fun deleteDeletedChatThrowsEx() {
+        cs.reset()
+        cs.deleteChat(CURRENT_USER_ID, SECOND_USER_ID)
+        cs.deleteChat(CURRENT_USER_ID, SECOND_USER_ID)
     }
 }
