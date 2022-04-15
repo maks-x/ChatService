@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>main.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ChatService</a> &gt; <a href="index.source.html" class="el_package">default</a> &gt; <span class="el_source">main.kt</span></div><h1>main.kt</h1><pre class="source lang-java linenums">import objects.*
+
+const val CURRENT_USER_ID = 1
+const val SECOND_USER_ID = 2
+const val THIRD_USER_ID = 3
+
+fun main() {
+<span class="nc" id="L8">    val cs = ChatService</span>
+
+    //messages
+<span class="nc" id="L11">    cs.createMessage(authorID = CURRENT_USER_ID, addresseeID = SECOND_USER_ID, &quot;KNOCK-KNOCK, Second!&quot;)</span>
+<span class="nc" id="L12">    cs.createMessage(authorID = SECOND_USER_ID, addresseeID = CURRENT_USER_ID, &quot;Who's there?&quot;)</span>
+<span class="nc" id="L13">    cs.createMessage(authorID = CURRENT_USER_ID, addresseeID = SECOND_USER_ID, &quot;It's poor Kotlin here =)&quot;)</span>
+    //messages
+<span class="nc" id="L15">    cs.createMessage(authorID = THIRD_USER_ID, addresseeID = CURRENT_USER_ID, &quot;hello, Current!&quot;)</span>
+<span class="nc" id="L16">    cs.createMessage(authorID = THIRD_USER_ID, addresseeID = CURRENT_USER_ID, &quot;how are you?&quot;)</span>
+<span class="nc" id="L17">    cs.createMessage(authorID = CURRENT_USER_ID, addresseeID = THIRD_USER_ID, &quot;hello, Third! I'm fine!&quot;)</span>
+
+<span class="nc" id="L19">    println(&quot;//print Current chats with last messages&quot;)</span>
+<span class="nc" id="L20">    cs.printUserChats(CURRENT_USER_ID)</span>
+<span class="nc" id="L21">    println()</span>
+
+<span class="nc" id="L23">    println(&quot;Current's chats, contains unread message(s) count = &quot; + cs.getUnreadChatsCount(CURRENT_USER_ID))</span>
+<span class="nc" id="L24">    println()</span>
+
+<span class="nc" id="L26">    println(&quot;//print messages list of Current with Second and, at the same time reading unread Second's messages&quot;)</span>
+<span class="nc" id="L27">    cs.printChatMessages(CURRENT_USER_ID, SECOND_USER_ID)</span>
+<span class="nc" id="L28">    println()</span>
+
+<span class="nc" id="L30">    println(&quot;Current's chats, contains unread message(s) count = &quot; + cs.getUnreadChatsCount(CURRENT_USER_ID))</span>
+<span class="nc" id="L31">    println()</span>
+
+<span class="nc" id="L33">    println(&quot;//print messages list of Current with Second after delete 2-nd and 3-rd message&quot;)</span>
+<span class="nc" id="L34">    cs.deleteMessage(CURRENT_USER_ID, SECOND_USER_ID, 2)</span>
+<span class="nc" id="L35">    cs.deleteMessage(CURRENT_USER_ID, SECOND_USER_ID, 3)</span>
+<span class="nc" id="L36">    cs.printChatMessages(CURRENT_USER_ID, SECOND_USER_ID)</span>
+<span class="nc" id="L37">    println()</span>
+
+<span class="nc" id="L39">    println(&quot;//print Current chats after delete chat with 2-nd&quot;)</span>
+<span class="nc" id="L40">    cs.deleteChat(CURRENT_USER_ID, SECOND_USER_ID)</span>
+<span class="nc" id="L41">    cs.printUserChats(CURRENT_USER_ID)</span>
+<span class="nc" id="L42">    println()</span>
+
+<span class="nc" id="L44">    println(&quot;//print chat of Current with Third and, at the same time reading unread Third's messages&quot;)</span>
+<span class="nc" id="L45">    cs.printChatMessages(CURRENT_USER_ID, THIRD_USER_ID)</span>
+<span class="nc" id="L46">    println()</span>
+
+<span class="nc" id="L48">    println(&quot;Current's chats, contains unread message(s) count = &quot; + cs.getUnreadChatsCount(CURRENT_USER_ID))</span>
+<span class="nc" id="L49">    println()</span>
+<span class="nc" id="L50">}</span>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
