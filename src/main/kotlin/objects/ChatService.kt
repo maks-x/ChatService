@@ -13,7 +13,7 @@ object ChatService {
     fun getUnreadChatsCount(userID: Int): Int {
         val chatList = getChatList(userID)
         return when (chatList.isEmpty()) {
-            false -> getChatList(userID).count { chat ->
+            false -> chatList.count { chat ->
                 chat.messages.filter { message ->
                     message.toID == userID
                 }.any { !it.beenRead }
