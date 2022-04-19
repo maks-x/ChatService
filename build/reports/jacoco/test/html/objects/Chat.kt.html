@@ -7,12 +7,15 @@
 <span class="pc" id="L7">    val id = talkers.hashCode()</span>
 <span class="fc" id="L8">    val messages: MutableList&lt;Message&gt; = mutableListOf()</span>
 <span class="fc" id="L9">    var isDeleted = false</span>
-<span class="pc" id="L10">    val lastMessage = {</span>
-<span class="nc bnc" id="L11" title="All 4 branches missed.">        messages.lastOrNull { !it.isDeleted }</span>
+<span class="fc" id="L10">    val lastMessage = {</span>
+<span class="pc bpc" id="L11" title="2 of 4 branches missed.">        messages.lastOrNull { !it.isDeleted }</span>
+    }
+<span class="fc" id="L13">    val hasUnreadMessages = { userID: Int -&gt;</span>
+<span class="fc bfc" id="L14" title="All 6 branches covered.">        messages.any { !it.beenRead &amp;&amp; it.authorID != userID }</span>
     }
 
     override fun toString(): String {
-<span class="nc bnc" id="L15" title="All 2 branches missed.">        return &quot;ChatID#$id (talkers=$talkers)\nlastMessage=${lastMessage() ?: &quot;no messages&quot;}&quot;</span>
+<span class="nc bnc" id="L18" title="All 2 branches missed.">        return &quot;ChatID#$id (talkers=$talkers)\nlastMessage=${lastMessage() ?: &quot;no messages&quot;}&quot;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

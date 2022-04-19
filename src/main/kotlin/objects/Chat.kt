@@ -10,6 +10,9 @@ data class Chat(
     val lastMessage = {
         messages.lastOrNull { !it.isDeleted }
     }
+    val hasUnreadMessages = { userID: Int ->
+        messages.any { !it.beenRead && it.authorID != userID }
+    }
 
     override fun toString(): String {
         return "ChatID#$id (talkers=$talkers)\nlastMessage=${lastMessage() ?: "no messages"}"
