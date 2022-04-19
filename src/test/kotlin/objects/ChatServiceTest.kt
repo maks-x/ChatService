@@ -37,14 +37,14 @@ class ChatServiceTest {
     }
 
     @Test
-    fun getUnreadChatsCountDeletedChat() {
+    fun getUnreadChatsCount_DeletedChat() {
         cs.reset()
         cs.deleteChat(CURRENT_USER_ID, SECOND_USER_ID)
         assertTrue(cs.getUnreadChatsCount(SECOND_USER_ID) == 0)
     }
 
     @Test
-    fun getUnreadChatsCountRead() {
+    fun getUnreadChatsCount_Read() {
         cs.reset()
         cs.getMessagesList(SECOND_USER_ID, CURRENT_USER_ID)
         assertTrue(cs.getUnreadChatsCount(SECOND_USER_ID) == 0)
@@ -70,7 +70,7 @@ class ChatServiceTest {
     fun getMessagesList() {
         cs.reset()
         val messages = listOf(
-            Message(3, CURRENT_USER_ID, SECOND_USER_ID, "It's poor Kotlin here =)")
+            Message(3, CURRENT_USER_ID, "It's poor Kotlin here =)")
         )
         assertTrue(messages == cs.getMessagesList(CURRENT_USER_ID, SECOND_USER_ID, 3, 1))
     }
@@ -81,13 +81,26 @@ class ChatServiceTest {
         cs.getMessagesList(CURRENT_USER_ID,4)
     }
 
+    @Test(expected = MessageNotFoundException::class)
+    fun getMessagesListThrowsMessageExc() {
+        cs.reset()
+        cs.getMessagesList(CURRENT_USER_ID, SECOND_USER_ID, 4)
+    }
+
+    @Test(expected = MessageNotFoundException::class)
+    fun getMessagesListDeletedMessage() {
+        cs.reset()
+        cs.deleteMessage(CURRENT_USER_ID, SECOND_USER_ID, 3)
+        cs.getMessagesList(CURRENT_USER_ID, SECOND_USER_ID, 3)
+    }
+
     @Test
     fun createMessageDeletedChat() {
         cs.reset()
         cs.deleteChat(CURRENT_USER_ID, SECOND_USER_ID)
-        val message = Message(4, CURRENT_USER_ID, SECOND_USER_ID, "")
+        val message = Message(4, CURRENT_USER_ID, "")
         val newMessage = cs.createMessage(CURRENT_USER_ID, SECOND_USER_ID, "")
-        val chatMessagesCount = cs.getMessagesList(CURRENT_USER_ID, SECOND_USER_ID).count()
+        val chatMessagesCount = cs.getMessagesList(CURRENT_USER_ID, SECOND_USER_ID, 4).count()
 
         assertTrue(message == newMessage && chatMessagesCount == 1)
     }

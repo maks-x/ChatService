@@ -11,113 +11,108 @@ object ChatService {
 
     //РїРѕРґСЃС‡РµС‚ СЃ С„РёР»СЊС‚СЂРѕРј РїРѕ СЃРѕРѕР±С‰РµРЅРёСЏРј, РІ РєРѕС‚РѕСЂС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РІС‹СЃС‚СѓРїР°Р» Р°РґСЂРµСЃР°С‚РѕРј
     fun getUnreadChatsCount(userID: Int): Int {
-<span class="fc" id="L14">        val chatList = getChatList(userID)</span>
-<span class="fc" id="L15">        return when (chatList.isEmpty()) {</span>
-<span class="fc bfc" id="L16" title="All 2 branches covered.">            false -&gt; getChatList(userID).count { chat -&gt;</span>
-<span class="fc" id="L17">                chat.messages.filter { message -&gt;</span>
-<span class="fc bfc" id="L18" title="All 4 branches covered.">                    message.toID == userID</span>
-<span class="pc bpc" id="L19" title="1 of 8 branches missed.">                }.any { !it.beenRead }</span>
-            }
-<span class="pc bpc" id="L21" title="1 of 2 branches missed.">            true -&gt; 0</span>
-        }
+<span class="fc" id="L14">        return getChatList(userID)</span>
+<span class="pc bpc" id="L15" title="1 of 4 branches missed.">            .count { it.hasUnreadMessages(userID) }</span>
     }
 
     fun getChatList(userID: Int): List&lt;Chat&gt; {
-<span class="fc bfc" id="L26" title="All 6 branches covered.">        return chats.filter { it.talkers.contains(userID) &amp;&amp; !it.isDeleted }</span>
+<span class="fc" id="L19">        return chats</span>
+<span class="fc bfc" id="L20" title="All 6 branches covered.">            .filter { it.talkers.contains(userID) &amp;&amp; !it.isDeleted }</span>
     }
 
     //РѕС‚РјРµС‡Р°СЋС‚СЃСЏ РїСЂРѕС‡РёС‚Р°РЅРЅС‹РјРё СЃРѕРѕР±С‰РµРЅРёСЏ, РІ РєРѕС‚РѕСЂС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РІС‹СЃС‚СѓРїР°Р» Р°РґСЂРµСЃР°С‚РѕРј
-<span class="fc" id="L30">    fun getMessagesList(</span>
+<span class="fc" id="L24">    fun getMessagesList(</span>
         userID: Int,
         otherID: Int,
-<span class="fc" id="L33">        startMessageID: Int = 1,</span>
-<span class="fc" id="L34">        count: Int = 100500</span>
+<span class="fc" id="L27">        startMessageID: Int = 1,</span>
+<span class="fc" id="L28">        count: Int = 10</span>
     ): List&lt;Message&gt; {
-<span class="fc" id="L36">        val messageList = chatOrException(userID, otherID).messages.filter {</span>
-<span class="fc bfc" id="L37" title="All 6 branches covered.">            it.id &gt;= startMessageID &amp;&amp; !it.isDeleted</span>
-        }
-<span class="fc" id="L39">        val result = when (count) {</span>
-<span class="fc bfc" id="L40" title="All 2 branches covered.">            100500 -&gt; messageList</span>
-<span class="fc" id="L41">            else -&gt; messageList.take(count)</span>
-        }
-<span class="fc" id="L43">        result.forEach {</span>
-<span class="fc bfc" id="L44" title="All 2 branches covered.">            if (it.toID == userID) it.beenRead = true</span>
-<span class="fc" id="L45">        }</span>
-<span class="fc" id="L46">        return result</span>
+<span class="fc" id="L30">        val messages = chatOrException(userID, otherID).messages</span>
+<span class="fc" id="L31">        val startIndex = messages</span>
+<span class="fc bfc" id="L32" title="All 6 branches covered.">            .indexOfFirst { it.id == startMessageID &amp;&amp; !it.isDeleted }</span>
+<span class="fc" id="L33">        return messages.asSequence()</span>
+<span class="fc bfc" id="L34" title="All 4 branches covered.">            .takeIf { startIndex &gt;= 0 }</span>
+<span class="fc" id="L35">            .let {</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">                it</span>
+<span class="fc" id="L37">                    ?: throw MessageNotFoundException(</span>
+<span class="fc" id="L38">                        &quot;Message #$startMessageID in chat of users #$userID and #$otherID not found or been deleted!&quot;</span>
+                    )
+            }
+<span class="fc" id="L41">            .drop(startIndex)</span>
+<span class="fc" id="L42">            .take(count)</span>
+<span class="fc" id="L43">            .apply {</span>
+<span class="fc" id="L44">                this</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">                    .filter { it.authorID != userID }</span>
+<span class="fc" id="L46">                    .forEach { it.beenRead = true }</span>
+<span class="fc" id="L47">            }</span>
+<span class="fc" id="L48">            .toList()</span>
     }
 
     //РµСЃР»Рё С‡Р°С‚ СѓР¶Рµ СЃРѕР·РґР°РІР°Р»СЃСЏ Рё Р±С‹Р» СѓРґР°Р»С‘РЅ, РІРѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј РµРіРѕ (РЅРѕ РЅРµ СѓРґР°Р»С‘РЅРЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ)
     fun createMessage(authorID: Int, addresseeID: Int, text: String): Message {
-<span class="fc bfc" id="L51" title="All 6 branches covered.">        val chat = chats.find { it.talkers.containsAll(listOf(authorID, addresseeID)) }</span>
-<span class="fc" id="L52">            ?: createChat(authorID, addresseeID)</span>
-<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (chat.isDeleted) chat.restore()</span>
-<span class="fc" id="L54">        chat.messages += Message(</span>
-<span class="fc" id="L55">            id = chat.messages.size + 1, authorID = authorID, toID = addresseeID, text = text</span>
-        )
-<span class="fc" id="L57">        return chat.messages.last()</span>
+<span class="fc bfc" id="L53" title="All 4 branches covered.">        return chats.firstOrNull { it.talkers.containsAll(listOf(authorID, addresseeID)) }</span>
+<span class="fc" id="L54">            ?.apply { isDeleted = false }</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">            .let { it ?: createChat(authorID, addresseeID) }</span>
+<span class="fc" id="L56">            .apply { messages += Message(id = messages.size + 1, authorID = authorID, text = text) }</span>
+<span class="fc" id="L57">            .lastMessage()!!</span>
     }
 
     //Р’ СЃРІСЏР·Рё СЃ РїСЂРёРІСЏР·РєРѕР№ СЃРѕРѕР±С‰РµРЅРёР№ Рє С‡Р°С‚Р°Рј, РЅРµРѕР±С…РѕРґРёРјРѕ СЃРЅР°С‡Р°Р»Р° &quot;РІС‹Р±СЂР°С‚СЊ&quot; РЅСѓР¶РЅС‹Р№ С‡Р°С‚ РїСѓС‚С‘Рј СѓРєР°Р·Р°РЅРёСЏ ID СЃРѕР±РµСЃРµРґРЅРёРєР°
-//  РўР°РєРѕР№ РїРѕРґС…РѕРґ С‚Р°РєР¶Рµ РїРѕР·РІРѕР»СЏРµС‚ РЅР°Рј Р»РµРіРєРѕ РґРѕР±Р°РІРёС‚СЊ РїСЂРѕРІРµСЂРєСѓ Р°РІС‚РѕСЂСЃС‚РІР° СЃРѕРѕР±С‰РµРЅРёСЏ СЃ Р·Р°РїСЂРµС‚РѕРј РЅР° СѓРґР°Р»РµРЅРёРµ С‡СѓР¶РѕРіРѕ
 //Р”Р»СЏ СѓРґР°Р»РµРЅРёСЏ С‡Р°С‚Р° Р·РґРµСЃСЊ РЅРµ РёСЃРїРѕР»СЊР·СѓРµРј deleteChat(), РїРѕСЃРєРѕР»СЊРєСѓ РЅРµС‚ РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё СѓРґР°Р»СЏС‚СЊ
 //  СѓР¶Рµ СѓРґР°Р»С‘РЅРЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ (СѓРґР°Р»РµРЅРёРµ РІСЃРµС… СЃРѕРѕР±С‰РµРЅРёР№ РјС‹ РїРѕРґС‚РІРµСЂР¶РґР°РµРј РІ РїР°СЂР°РјРµС‚СЂРµ if())
     fun deleteMessage(userID: Int, otherID: Int, messageID: Int): Boolean {
-<span class="fc" id="L65">        val chat = chatOrException(userID, otherID)</span>
-<span class="fc bfc" id="L66" title="All 10 branches covered.">        val message = chat.messages.find { it.id == messageID &amp;&amp; !it.isDeleted }</span>
-<span class="fc" id="L67">            ?: throw MessageNotFoundException(</span>
-<span class="fc" id="L68">                &quot;Message #$messageID in chat of users #$userID and #$otherID not found or been deleted!&quot;</span>
+<span class="fc" id="L64">        val chat = chatOrException(userID, otherID)</span>
+<span class="fc bfc" id="L65" title="All 8 branches covered.">        val message = chat.messages.firstOrNull { it.id == messageID &amp;&amp; !it.isDeleted }</span>
+<span class="fc" id="L66">            ?: throw MessageNotFoundException(</span>
+<span class="fc" id="L67">                &quot;Message #$messageID in chat of users #$userID and #$otherID not found or been deleted!&quot;</span>
             )
-<span class="fc" id="L70">        message.isDeleted = true</span>
-<span class="fc bfc" id="L71" title="All 6 branches covered.">        if (!chat.messages.any { !it.isDeleted }) chat.isDeleted = true</span>
-<span class="fc" id="L72">        return true</span>
-    }
-
-    private fun createChat(userID: Int, otherID: Int): Chat {
-<span class="fc" id="L76">        val newChat = Chat(listOf(userID, otherID).sorted())</span>
-<span class="fc" id="L77">        chats += newChat</span>
-<span class="fc" id="L78">        return newChat</span>
+<span class="fc" id="L69">        message.isDeleted = true</span>
+<span class="fc bfc" id="L70" title="All 6 branches covered.">        if (!chat.messages.any { !it.isDeleted }) chat.isDeleted = true</span>
+<span class="fc" id="L71">        return true</span>
     }
 
     fun deleteChat(userID: Int, otherID: Int): Boolean {
-<span class="fc" id="L82">        val chat = chatOrException(userID, otherID)</span>
-<span class="fc" id="L83">        chat.isDeleted = true</span>
-<span class="fc" id="L84">        chat.messages.forEach { it.isDeleted = true }</span>
-<span class="fc" id="L85">        return true</span>
+<span class="fc" id="L75">        val chat = chatOrException(userID, otherID)</span>
+<span class="fc" id="L76">        chat.isDeleted = true</span>
+<span class="fc" id="L77">        chat.messages.forEach { it.isDeleted = true }</span>
+<span class="fc" id="L78">        return true</span>
     }
 
     fun clear(code: String) {
-<span class="pc bpc" id="L89" title="1 of 2 branches missed.">        if (code == &quot;bonsai!&quot;) chats.clear()</span>
-<span class="fc" id="L90">    }</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (code == &quot;bonsai!&quot;) chats.clear()</span>
+<span class="fc" id="L83">    }</span>
 
 //private functions
 
-    private fun chatOrException(userID: Int, otherID: Int): Chat {
-<span class="fc bfc" id="L95" title="All 6 branches covered.">        return chats.find {</span>
-<span class="fc bfc" id="L96" title="All 2 branches covered.">            it.talkers.containsAll(listOf(userID, otherID))</span>
-<span class="fc bfc" id="L97" title="All 2 branches covered.">                    &amp;&amp; !it.isDeleted</span>
-<span class="fc" id="L98">        } ?: throw ChatNotFoundException(&quot;Chat of users #$userID and #$otherID not found!&quot;)</span>
+    private fun createChat(userID: Int, otherID: Int): Chat {
+<span class="fc" id="L88">        val newChat = Chat(listOf(userID, otherID).sorted())</span>
+<span class="fc" id="L89">        chats += newChat</span>
+<span class="fc" id="L90">        return newChat</span>
     }
 
-    private fun Chat.restore() {
-<span class="fc" id="L102">        this.isDeleted = false</span>
-<span class="fc" id="L103">    }</span>
+    private fun chatOrException(userID: Int, otherID: Int): Chat {
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        return chats.firstOrNull {</span>
+<span class="fc bfc" id="L95" title="All 4 branches covered.">            it.talkers.containsAll(listOf(userID, otherID))</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">                    &amp;&amp; !it.isDeleted</span>
+<span class="fc" id="L97">        } ?: throw ChatNotFoundException(&quot;Chat of users #$userID and #$otherID not found!&quot;)</span>
+    }
 
 //output functions
 
-<span class="pc" id="L107">    val printUserChats = { userID: Int -&gt;</span>
-<span class="nc" id="L108">        getChatList(userID).forEach { println(it) }</span>
-<span class="nc" id="L109">    }</span>
+<span class="pc" id="L102">    val printUserChats = { userID: Int -&gt;</span>
+<span class="nc" id="L103">        getChatList(userID).forEach { println(it) }</span>
+<span class="nc" id="L104">    }</span>
 
-<span class="nc" id="L111">    fun printChatMessages(userID: Int, addresseeID: Int, startMessageID: Int = 1, count: Int = 5) {</span>
-<span class="nc" id="L112">        val messageList = getMessagesList(userID, addresseeID, startMessageID, count)</span>
-<span class="nc" id="L113">        val mark = { message: Message -&gt;</span>
-<span class="nc" id="L114">            when (message.authorID) {</span>
-<span class="nc bnc" id="L115" title="All 2 branches missed.">                userID -&gt; &quot;outgoing&quot;</span>
-<span class="nc" id="L116">                else -&gt; &quot;INCOMING&quot;</span>
+    fun printChatMessages(userID: Int, addresseeID: Int) {
+<span class="nc" id="L107">        val messageList = getMessagesList(userID, addresseeID)</span>
+<span class="nc" id="L108">        val mark = { message: Message -&gt;</span>
+<span class="nc" id="L109">            when (message.authorID) {</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">                userID -&gt; &quot;outgoing&quot;</span>
+<span class="nc" id="L111">                else -&gt; &quot;INCOMING&quot;</span>
             }
         }
-<span class="nc" id="L119">        println(chatOrException(userID, addresseeID))</span>
-<span class="nc" id="L120">        messageList.forEach { println(&quot;${mark(it)} $it&quot;) }</span>
-<span class="nc" id="L121">    }</span>
+<span class="nc" id="L114">        println(chatOrException(userID, addresseeID))</span>
+<span class="nc" id="L115">        messageList.forEach { println(&quot;${mark(it)} $it&quot;) }</span>
+<span class="nc" id="L116">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
